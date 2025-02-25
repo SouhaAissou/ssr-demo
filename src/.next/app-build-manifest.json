@@ -1,0 +1,9 @@
+{
+  "pages": {
+    "/api/packages/[packageId]/upload-document/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/packages/[packageId]/upload-document/route.js"
+    ]
+  }
+}

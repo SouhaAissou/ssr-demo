@@ -44,7 +44,7 @@ export default function UploadDocument() {
 
       setSuccess("Document uploaded successfully!");
       setFile(null);
-      router.push("/dashboard"); // Redirect to dashboard after upload
+      router.push("#"); 
     } catch (err) {
       setError(err.message);
     } finally {
