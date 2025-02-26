@@ -1,52 +1,55 @@
 "use client";
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-export default function UploadDocument() {
-  const { packageId } = useParams();
-  const [file, setFile] = useState(null);
+export default function AddDocs() {
+  const [error, setError] = useState();
+  const [file, setFile] = useState();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const router = useRouter();
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+  const packageId = useParams().packageId;
+
+  const handleFileChange = (event) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setFile(event.target.files[0]);
+    }
   };
 
-  const handleUpload = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!file) {
-      setError("Please select a file to upload.");
+      setError("Please select a file first.");
       return;
     }
 
     setLoading(true);
-    setError("");
-    setSuccess("");
+    setError(null);
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("packageId", packageId);
 
     try {
-      const res = await fetch(`/api/packages/${packageId}/upload-document`, {
+      const response = await fetch(`/api/packages/${packageId}/upload-document`, {
         method: "POST",
         body: formData,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to upload document");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to upload document");
 
-      setSuccess("Document uploaded successfully!");
-      setFile(null);
-      router.push("#"); 
-    } catch (err) {
-      setError(err.message);
+      alert("Document uploaded successfully!");
+      console.log(data);
+
+      // Redirect to add users page with the document ID
+      // router.push(`/workflow/add-users?packageId=${packageId}&documentId=${data.documentId}`);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setError(error.message || "Upload failed");
     } finally {
       setLoading(false);
     }
@@ -54,19 +57,22 @@ export default function UploadDocument() {
 
   return (
     <div className="flex justify-center bg-gray-200 pt-10 w-full h-screen relative">
-      <Card className="w-4/5 mx-auto">
+      <Card className="w-3/4">
         <CardHeader>
-          <CardTitle>Upload Document</CardTitle>
-          <CardDescription>Upload a document to the workflow</CardDescription>
+          <CardTitle>New Workflow</CardTitle>
+          <CardDescription>Add document</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Label>Document File</Label>
-          <Input type="file" onChange={handleFileChange} />
-          {error && <p className="text-red-500 mt-2">{error}</p>}
-          {success && <p className="text-green-500 mt-2">{success}</p>}
+        <CardContent className="p-6 space-y-4">
+          <div className="space-y-2 text-sm">
+            <Label htmlFor="file" className="text-sm font-medium">
+              File
+            </Label>
+            <Input id="file" type="file" accept="application/pdf" onChange={handleFileChange} />
+          </div>
+          {error && <p className="text-red-500">{error}</p>}
         </CardContent>
         <CardFooter>
-          <Button onClick={handleUpload} disabled={loading}>
+          <Button onClick={handleSubmit} size="lg" disabled={loading}>
             {loading ? "Uploading..." : "Upload"}
           </Button>
         </CardFooter>
